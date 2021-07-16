@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+env
+
 if [[ $OSTYPE != "linux-gnu" ]]; then
   echo "This script is made for Linux, detected ${OSTYPE}"
   exit 127
@@ -28,6 +30,7 @@ case $ID in
   ;;
 esac
 
+
 # Update packet manager and upgrade packages
 case $os_type in
   ubuntu | debian)
@@ -38,15 +41,19 @@ case $os_type in
     sudo yum update -y
   ;;
 esac
-TERRAFORM=true
-TERRAFORM_VER="1.0.2"
-ANSIBLE=true
-KUBECTL=true
-JQ=true
-HELM=true
-SOPS=true
-SOPS_VER="3.7.1"
-K9S=true
+
+# Hardcoding vars
+
+# TERRAFORM=true
+# TERRAFORM_VER="1.0.2"
+# ANSIBLE=true
+# KUBECTL=true
+# JQ=true
+# HELM=true
+# SOPS=true
+# SOPS_VER="3.7.1"
+# K9S=true
+# ZSH=true
 
 #tmux????????????????????????????????
 
@@ -71,12 +78,12 @@ case $os_type in
 esac
 
 # Install terraform
-if [ $TERRAFORM = true ]; then
+if [ "$TERRAFORM" = true ]; then
   case $os_type in
     ubuntu | debian)
       curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
       sudo apt-add-repository -y "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-      sudo apt-get update && sudo apt-get install terraform=$TERRAFORM_VER
+      sudo apt-get update && sudo apt-get install terraform="$TERRAFORM_VER"
       terraform -install-autocomplete
     ;;
     centos)
@@ -88,7 +95,7 @@ if [ $TERRAFORM = true ]; then
 fi
 
 # Install ansible
-if [ $ANSIBLE = true ]; then
+if [ "$ANSIBLE" = true ]; then
   case $os_type in
     ubuntu | debian)
       sudo apt install -y ansible
@@ -100,7 +107,7 @@ if [ $ANSIBLE = true ]; then
 fi
 
 # Install kubectl
-if [ $KUBECTL = true ]; then
+if [ "$KUBECTL" = true ]; then
   case $os_type in
     ubuntu | debian)
       curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -109,7 +116,7 @@ if [ $KUBECTL = true ]; then
       sudo apt-get install -y kubectl
     ;;
     centos)
-      sudo cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+      cat <<EOF | sudo tee -a /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
 baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
@@ -118,13 +125,13 @@ gpgcheck=1
 repo_gpgcheck=1
 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF
-      yum install -y kubectl
+      sudo yum install -y kubectl
     ;;
   esac
 fi
 
 # Install jq
-if [ $JQ = true ]; then
+if [ "$JQ" = true ]; then
   case $os_type in
     ubuntu | debian)
       sudo apt install -y jq
@@ -136,7 +143,7 @@ if [ $JQ = true ]; then
 fi
 
 # Install helm
-if [ $HELM = true ]; then
+if [ "$HELM" = true ]; then
   case $os_type in
     ubuntu | debian)
       curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
@@ -152,26 +159,26 @@ fi
 
 
 # Install sops
-if [ $SOPS = true ]; then
+if [ "$SOPS" = true ]; then
   case $os_type in
     ubuntu | debian)
       sops_deb_name="sops_${SOPS_VER}_amd64.deb"
-      wget https://github.com/mozilla/sops/releases/download/v${SOPS_VER}/${sops_deb_name}
-      sudo apt install -y ./${sops_deb_name}
-      rm ${sops_deb_name}
+      wget "https://github.com/mozilla/sops/releases/download/v${SOPS_VER}/${sops_deb_name}"
+      sudo apt install -y "./${sops_deb_name}"
+      rm "${sops_deb_name}"
     ;;
     centos)
       sops_deb_name="sops-${SOPS_VER}-1.x86_64.rpm"
-      wget https://github.com/mozilla/sops/releases/download/v${SOPS_VER}/${sops_deb_name}
-      sudo yum localinstall -y ./${sops_deb_name}
-      rm ${sops_deb_name}
+      wget "https://github.com/mozilla/sops/releases/download/v${SOPS_VER}/${sops_deb_name}"
+      sudo yum localinstall -y "./${sops_deb_name}"
+      rm "${sops_deb_name}"
     ;;
   esac
 fi
 
 
 # Install k9s
-if [ $K9S = true ]; then
+if [ "$K9S" = true ]; then
   wget https://github.com/derailed/k9s/releases/download/v0.24.14/k9s_Linux_x86_64.tar.gz
   tar zxf k9s_Linux_x86_64.tar.gz
   sudo mv k9s /usr/local/bin
@@ -181,7 +188,7 @@ fi
 
 # Install zsh + oh-my-zsh + powerlevel10k + plugins
 
-if [ $ZSH = true ]; then
+if [ "$ZSH" = true ]; then
   if command -v zsh &> /dev/null && command -v git &> /dev/null && command -v wget &> /dev/null; then
       echo -e "ZSH and Git are already installed\n"
   else
@@ -193,7 +200,7 @@ if [ $ZSH = true ]; then
   fi
 
 
-  if mv -n ~/.zshrc ~/.zshrc-backup-$(date +"%Y-%m-%d"); then # backup .zshrc
+  if mv -n ~/.zshrc "$HOME/.zshrc-backup-$(date +"%Y-%m-%d")"; then # backup .zshrc
       echo -e "Backed up the current .zshrc to .zshrc-backup-date\n"
   fi
 
@@ -205,8 +212,7 @@ if [ $ZSH = true ]; then
       git clone --depth=1 git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
   fi
 
-  cp -f .zshrc ~/
-  cp -f .p10k.zsh ~/
+
 
 
 
@@ -270,12 +276,17 @@ if [ $ZSH = true ]; then
   if [ $os_type = "centos" ]; then
     sudo dnf -y install util-linux-user
   fi
+  
 
-  if sudo chsh -s $(which zsh) $(whoami) && /bin/zsh -i -c upgrade_oh_my_zsh; then
+  
+  if sudo chsh -s "$(which zsh)" "$(whoami)"; then
       echo -e "Installation Successful, exit terminal and enter a new session"
   else
       echo -e "Something is wrong"
   fi
-  exit
+  
+  cd "$INSTALL_DIR" || exit 127
+  cp -f ./.zshrc ~/
+  cp -f ./.p10k.zsh ~/
 
 fi
