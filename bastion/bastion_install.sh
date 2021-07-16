@@ -1,46 +1,6 @@
 #!/usr/bin/env bash
 
-if [[ $OSTYPE != "linux-gnu" ]]; then
-  echo "This script is made for Linux, detected ${OSTYPE}"
-  exit 127
-fi
-
-# Detect OS family
-os_release=$(grep ^ID= < /etc/os-release)
-eval "$os_release"
-
-case $ID in
-  ubuntu)
-    echo "Ubuntu detected"
-    os_type="ubuntu"
-  ;;
-  debian)
-    echo "Debian detected"
-    os_type="debian"
-  ;;
-  centos)
-    echo "CentOS detected"
-    os_type="centos"
-  ;;
-  *)
-    echo "Sorry, this script doesn't support \"${ID}\" OS type"
-    exit 127
-  ;;
-esac
-
-
-# Update packet manager and upgrade packages
-case $os_type in
-  ubuntu | debian)
-    sudo apt update && sudo apt upgrade -y
-  ;;
-  centos)
-    sudo yum install epel-release -y
-    sudo yum update -y
-  ;;
-esac
-
-# Hardcoding vars
+# Hardcoded vars
 
 # TERRAFORM=true
 # TERRAFORM_VER="1.0.2"
@@ -53,10 +13,63 @@ esac
 # K9S=true
 # ZSH=true
 
-#tmux????????????????????????????????
+red=$(tput setaf 1)
+green=$(tput setaf 2)
+yellow=$(tput setaf 3)
+blue=$(tput setaf 4)
+# magenta=$(tput setaf 5)
+# cyan=$(tput setaf 6)
+reset=$(tput sgr0)
+
+if [[ $OSTYPE != "linux-gnu" ]]; then
+  echo "This script is made for Linux, ${red}detected ${OSTYPE}${reset}"
+  exit 127
+fi
+
+# Detect OS family
+os_release=$(grep ^ID= < /etc/os-release)
+eval "$os_release"
+
+case $ID in
+  ubuntu)
+    echo "$green}Ubuntu detected${reset}"
+    os_type="ubuntu"
+  ;;
+  debian)
+    echo "$green}Debian detected${reset}"
+    os_type="debian"
+  ;;
+  centos)
+    echo "$green}CentOS detected${reset}"
+    os_type="centos"
+  ;;
+  *)
+    echo "Sorry, this script doesn't support ${red}\"${ID}\" OS type${reset}"
+    exit 127
+  ;;
+esac
+
+
+# Update packet manager and upgrade packages
+echo "${green}${reset}"
+
+echo "${green}Update packet manager and upgrade packages${reset}"
+case $os_type in
+  ubuntu | debian)
+    sudo apt update && sudo apt upgrade -y
+  ;;
+  centos)
+    sudo yum install epel-release -y
+    sudo yum update -y
+  ;;
+esac
+
+
 
 
 # Install curl, git, pip and other useful staff with no choise)
+echo "${green}Install curl, git, wget, pip and other useful staff${reset}"
+
 case $os_type in
   debian)
     sudo apt install -y curl git python python-pip python3 python3-pip gnupg software-properties-common apt-transport-https wget
@@ -76,6 +89,8 @@ case $os_type in
 esac
 
 # Install terraform
+echo "${green}Install terraform${reset}"
+
 if [ "$TERRAFORM" = true ]; then
   case $os_type in
     ubuntu | debian)
@@ -93,6 +108,8 @@ if [ "$TERRAFORM" = true ]; then
 fi
 
 # Install ansible
+echo "${green}nstall ansible${reset}"
+
 if [ "$ANSIBLE" = true ]; then
   case $os_type in
     ubuntu | debian)
@@ -105,6 +122,8 @@ if [ "$ANSIBLE" = true ]; then
 fi
 
 # Install kubectl
+echo "${green}Install kubectl${reset}"
+
 if [ "$KUBECTL" = true ]; then
   case $os_type in
     ubuntu | debian)
@@ -129,6 +148,8 @@ EOF
 fi
 
 # Install jq
+echo "${green}Install jq${reset}"
+
 if [ "$JQ" = true ]; then
   case $os_type in
     ubuntu | debian)
@@ -141,6 +162,8 @@ if [ "$JQ" = true ]; then
 fi
 
 # Install helm
+echo "${green}Install helm${reset}"
+
 if [ "$HELM" = true ]; then
   case $os_type in
     ubuntu | debian)
@@ -157,6 +180,8 @@ fi
 
 
 # Install sops
+echo "${green}Install sops${reset}"
+
 if [ "$SOPS" = true ]; then
   case $os_type in
     ubuntu | debian)
@@ -176,6 +201,8 @@ fi
 
 
 # Install k9s
+echo "${green}Install k9s${reset}"
+
 if [ "$K9S" = true ]; then
   wget https://github.com/derailed/k9s/releases/download/v0.24.14/k9s_Linux_x86_64.tar.gz
   tar zxf k9s_Linux_x86_64.tar.gz
@@ -185,37 +212,35 @@ fi
 
 
 # Install zsh + oh-my-zsh + powerlevel10k + plugins
+echo "${green}Install zsh + oh-my-zsh + powerlevel10k + plugins${reset}"
 
 if [ "$ZSH" = true ]; then
-  if command -v zsh &> /dev/null && command -v git &> /dev/null && command -v wget &> /dev/null; then
-      echo -e "ZSH and Git are already installed\n"
+  if command -v zsh &> /dev/null; then
+      echo -e "${green}ZSH is already installed\n${reset}"
   else
-      if sudo apt install -y zsh git wget || sudo pacman -S zsh git wget || sudo dnf install -y zsh git wget || sudo yum install -y zsh git wget || sudo brew install git zsh wget || pkg install git zsh wget ; then
-          echo -e "zsh wget and git Installed\n"
+      if sudo apt install -y zsh || sudo dnf install -y zsh || sudo yum install -y zsh; then
+          echo -e "${green}ZSH installed\n${reset}"
       else
-          echo -e "Please install the following packages first, then try again: zsh git wget \n" && exit
+          echo -e "${red}Please install the following packages first, then try again: zsh git wget \n${reset}" && exit
       fi
   fi
 
 
   if mv -n ~/.zshrc "$HOME/.zshrc-backup-$(date +"%Y-%m-%d")"; then # backup .zshrc
-      echo -e "Backed up the current .zshrc to .zshrc-backup-date\n"
+      echo -e "${green}Backed up the current .zshrc to .zshrc-backup-date\n${reset}"
   fi
 
 
-  echo -e "Installing oh-my-zsh\n"
+  echo -e "${green}Install oh-my-zsh\n${reset}"
   if [ -d ~/.oh-my-zsh ]; then
-      echo -e "oh-my-zsh is already installed\n"
+      echo -e "${green}oh-my-zsh is already installed\n${reset}"
   else
       git clone --depth=1 git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
   fi
 
 
-
-
-
   mkdir -p ~/.zsh_plugins       # external plugins, things, will be instlled in here
-
+  echo "${green}Install plugins${reset}"
   if [ -d ~/.oh-my-zsh/plugins/zsh-autosuggestions ]; then
       cd ~/.oh-my-zsh/plugins/zsh-autosuggestions && git pull
   else
@@ -243,13 +268,14 @@ if [ "$ZSH" = true ]; then
 
   # INSTALL FONTS
 
-  echo -e "Installing Nerd Fonts version of Hack, Roboto Mono, DejaVu Sans Mono\n"
+  echo -e "${green}Install Nerd Fonts version of Hack, Roboto Mono, DejaVu Sans Mono\n${reset}"
 
   wget -q --show-progress -N https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/Hack/Regular/complete/Hack%20Regular%20Nerd%20Font%20Complete.ttf -P ~/.fonts/
   wget -q --show-progress -N https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/RobotoMono/Regular/complete/Roboto%20Mono%20Nerd%20Font%20Complete.ttf -P ~/.fonts/
   wget -q --show-progress -N https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/DejaVuSansMono/Regular/complete/DejaVu%20Sans%20Mono%20Nerd%20Font%20Complete.ttf -P ~/.fonts/
 
   fc-cache -fv ~/.fonts
+  echo -e "${green}Install Powerlevel10k\n${reset}"
 
   if [ -d ~/.oh-my-zsh/custom/themes/powerlevel10k ]; then
       cd ~/.oh-my-zsh/custom/themes/powerlevel10k && git pull
@@ -264,27 +290,28 @@ if [ "$ZSH" = true ]; then
   fi
 
   if ~/.zsh_plugins/marker/install.py; then
-      echo -e "Installed Marker\n"
+      echo -e "${green}Installed Marker\n${reset}"
   else
-      echo -e "Marker Installation Had Issues\n"
+      echo -e "${yellow}Marker Installation Had Issues\n${reset}"
   fi
 
-  echo -e "\nSudo access is needed to change default shell\n"
+  echo -e "${yellow}\nSudo access is needed to change default shell\n${reset}"
 
   if [ $os_type = "centos" ]; then
+    echo -e "${green}Install chsh\n${reset}"
     sudo dnf -y install util-linux-user
   fi
   
-
-  
-  if sudo chsh -s "$(which zsh)" "$(whoami)"; then
-      echo -e "Installation Successful, exit terminal and enter a new session"
-  else
-      echo -e "Something is wrong"
-  fi
-  
   cd "$INSTALL_DIR" || exit 127
+  echo -e "${green}Copy ZSH and powerlevel10k config${reset}"
   cp -f ./.zshrc ~/
   cp -f ./.p10k.zsh ~/
+  
+  echo -e "${green}Changing SHELL to ZSH${reset}"
+  if sudo chsh -s "$(which zsh)" "$(whoami)"; then
+      echo -e "${blue}Installation Successful${reset}"
+  else
+      echo -e "${red}Something went wrong${reset}"
+  fi
 
 fi
