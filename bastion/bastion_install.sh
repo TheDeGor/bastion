@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-env
-
 if [[ $OSTYPE != "linux-gnu" ]]; then
   echo "This script is made for Linux, detected ${OSTYPE}"
   exit 127
