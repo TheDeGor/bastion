@@ -27,4 +27,7 @@ Settings are:
 18. `sops_version` SOPS version to install (for example `"3.7.1"`), use it with `sops = true` setting
 19. `k9s` - install [K9S](https://github.com/derailed/k9s)
 
-### Have a pleasant use!)
+#### Have a pleasant use!)
+
+### Links
+I used [quickzsh](https://github.com/jotyGill/quickz-sh) in my scripts
