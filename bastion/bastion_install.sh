@@ -56,11 +56,11 @@ echo "${green}${reset}"
 echo "${green}Update packet manager and upgrade packages${reset}"
 case $os_type in
   ubuntu | debian)
-    sudo apt update && sudo apt upgrade -y
+    DEBIAN_FRONTEND=noninteractive sudo apt update -qq 2> /dev/null && DEBIAN_FRONTEND=noninteractive sudo apt upgrade -y -qq 2> /dev/null
   ;;
   centos)
-    sudo yum install epel-release -y
-    sudo yum update -y
+    sudo yum install epel-release -y -q > /dev/null
+    sudo yum update -y -q > /dev/null
   ;;
 esac
 
@@ -72,19 +72,19 @@ echo "${green}Install curl, git, wget, pip and other useful staff${reset}"
 
 case $os_type in
   debian)
-    sudo apt install -y curl git python python-pip python3 python3-pip gnupg software-properties-common apt-transport-https wget
+    DEBIAN_FRONTEND=noninteractive sudo apt install -y curl git python python-pip python3 python3-pip gnupg software-properties-common apt-transport-https wget -qq 2> /dev/null
   ;;
   ubuntu)
-    sudo apt install -y curl git python python3 python3-pip gnupg software-properties-common apt-transport-https wget
+    DEBIAN_FRONTEND=noninteractive sudo apt install -y curl git python python3 python3-pip gnupg software-properties-common apt-transport-https wget -qq 2> /dev/null
   ;;
   centos)
-    sudo yum install -y curl git wget
-    sudo dnf install -y python3
-    sudo yum install -y python3-devel
-    sudo dnf install -y python2
-    sudo yum install -y python2-devel
-    sudo yum groupinstall -y 'development tools'
-    sudo ln -s /usr/bin/python2 /usr/bin/python
+    sudo yum install -q -y curl git wget > /dev/null
+    sudo dnf install -q -y python3 > /dev/null
+    sudo yum install -q -y python3-devel > /dev/null
+    sudo dnf install -q -y python2 > /dev/null
+    sudo yum install -q -y python2-devel > /dev/null
+    sudo yum groupinstall -q -y 'development tools' > /dev/null
+    sudo ln -s /usr/bin/python2 /usr/bin/python > /dev/null
   ;;
 esac
 
@@ -94,29 +94,29 @@ echo "${green}Install terraform${reset}"
 if [ "$TERRAFORM" = true ]; then
   case $os_type in
     ubuntu | debian)
-      curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-      sudo apt-add-repository -y "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-      sudo apt-get update && sudo apt-get install terraform="$TERRAFORM_VER"
-      terraform -install-autocomplete
+      curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - > /dev/null
+      sudo apt-add-repository -y "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" > /dev/null
+      DEBIAN_FRONTEND=noninteractive sudo apt-get update -qq > /dev/null && sudo apt-get install terraform="$TERRAFORM_VER" -qq > /dev/null
+      terraform -install-autocomplete > /dev/null
     ;;
     centos)
-      sudo yum install -y yum-utils
-      sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
-      sudo yum -y install "terraform-${TERRAFORM_VER}-1.x86_64"
+      sudo yum install -y -q yum-utils  > /dev/null
+      sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo  > /dev/null
+      sudo yum -y -q install "terraform-${TERRAFORM_VER}-1.x86_64" > /dev/null
     ;;
   esac
 fi
 
 # Install ansible
-echo "${green}nstall ansible${reset}"
+echo "${green}Install ansible${reset}"
 
 if [ "$ANSIBLE" = true ]; then
   case $os_type in
     ubuntu | debian)
-      sudo apt install -y ansible
+      DEBIAN_FRONTEND=noninteractive sudo apt install -y ansible -qq > /dev/null
     ;;
     centos)
-      python2 -m pip install --user ansible
+      python2 -m pip install --user ansible > /dev/null
     ;;
   esac
 fi
@@ -127,13 +127,13 @@ echo "${green}Install kubectl${reset}"
 if [ "$KUBECTL" = true ]; then
   case $os_type in
     ubuntu | debian)
-      curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-      echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
-      sudo apt-get update
-      sudo apt-get install -y kubectl
+      curl -sS https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add - > /dev/null
+      echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list > /dev/null
+      DEBIAN_FRONTEND=noninteractive sudo apt-get update -qq > /dev/null
+      DEBIAN_FRONTEND=noninteractive sudo apt-get install -y kubectl -qq > /dev/null
     ;;
     centos)
-      cat <<EOF | sudo tee -a /etc/yum.repos.d/kubernetes.repo
+      cat <<EOF | sudo tee -a /etc/yum.repos.d/kubernetes.repo > /dev/null
 [kubernetes]
 name=Kubernetes
 baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
@@ -142,7 +142,7 @@ gpgcheck=1
 repo_gpgcheck=1
 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
 EOF
-      sudo yum install -y kubectl
+      sudo yum install -y -q kubectl  > /dev/null
     ;;
   esac
 fi
@@ -153,10 +153,10 @@ echo "${green}Install jq${reset}"
 if [ "$JQ" = true ]; then
   case $os_type in
     ubuntu | debian)
-      sudo apt install -y jq
+      DEBIAN_FRONTEND=noninteractive sudo apt install -y jq -qq > /dev/null
     ;;
     centos)
-      sudo yum install -y jq
+      sudo yum install -y -q jq  > /dev/null
     ;;
   esac
 fi
@@ -167,13 +167,13 @@ echo "${green}Install helm${reset}"
 if [ "$HELM" = true ]; then
   case $os_type in
     ubuntu | debian)
-      curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
-      echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
-      sudo apt-get update
-      sudo apt-get install -y helm
+      curl -sS https://baltocdn.com/helm/signing.asc | sudo apt-key add - > /dev/null
+      echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list > /dev/null
+      DEBIAN_FRONTEND=noninteractive sudo apt-get update -qq > /dev/null
+      DEBIAN_FRONTEND=noninteractive sudo apt-get install -y helm -qq > /dev/null
     ;;
     centos)
-      curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      curl -sS https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash  > /dev/null
     ;;
   esac
 fi
@@ -186,14 +186,14 @@ if [ "$SOPS" = true ]; then
   case $os_type in
     ubuntu | debian)
       sops_deb_name="sops_${SOPS_VER}_amd64.deb"
-      wget "https://github.com/mozilla/sops/releases/download/v${SOPS_VER}/${sops_deb_name}"
-      sudo apt install -y "./${sops_deb_name}"
+      wget -q "https://github.com/mozilla/sops/releases/download/v${SOPS_VER}/${sops_deb_name}"
+      DEBIAN_FRONTEND=noninteractive sudo apt install -qq -y "./${sops_deb_name}" > /dev/null
       rm "${sops_deb_name}"
     ;;
     centos)
       sops_deb_name="sops-${SOPS_VER}-1.x86_64.rpm"
-      wget "https://github.com/mozilla/sops/releases/download/v${SOPS_VER}/${sops_deb_name}"
-      sudo yum localinstall -y "./${sops_deb_name}"
+      wget -q "https://github.com/mozilla/sops/releases/download/v${SOPS_VER}/${sops_deb_name}"
+      sudo yum localinstall -y -q "./${sops_deb_name}"  > /dev/null
       rm "${sops_deb_name}"
     ;;
   esac
@@ -204,7 +204,7 @@ fi
 echo "${green}Install k9s${reset}"
 
 if [ "$K9S" = true ]; then
-  wget https://github.com/derailed/k9s/releases/download/v0.24.14/k9s_Linux_x86_64.tar.gz
+  wget -q https://github.com/derailed/k9s/releases/download/v0.24.14/k9s_Linux_x86_64.tar.gz
   tar zxf k9s_Linux_x86_64.tar.gz
   sudo mv k9s /usr/local/bin
   rm README.md LICENSE k9s_Linux_x86_64.tar.gz
@@ -218,7 +218,7 @@ if [ "$ZSH" = true ]; then
   if command -v zsh &> /dev/null; then
       echo -e "${green}ZSH is already installed\n${reset}"
   else
-      if sudo apt install -y zsh || sudo dnf install -y zsh || sudo yum install -y zsh; then
+      if DEBIAN_FRONTEND=noninteractive sudo apt install -qq -y zsh 2> /dev/null || sudo dnf install -y -q zsh 2> /dev/null || sudo yum install -y -q zsh 2> /dev/null ; then
           echo -e "${green}ZSH installed\n${reset}"
       else
           echo -e "${red}Please install the following packages first, then try again: zsh git wget \n${reset}" && exit
@@ -226,7 +226,7 @@ if [ "$ZSH" = true ]; then
   fi
 
 
-  if mv -n ~/.zshrc "$HOME/.zshrc-backup-$(date +"%Y-%m-%d")"; then # backup .zshrc
+  if mv -n ~/.zshrc "$HOME/.zshrc-backup-$(date +"%Y-%m-%d")" > /dev/null; then # backup .zshrc
       echo -e "${green}Backed up the current .zshrc to .zshrc-backup-date\n${reset}"
   fi
 
@@ -235,7 +235,7 @@ if [ "$ZSH" = true ]; then
   if [ -d ~/.oh-my-zsh ]; then
       echo -e "${green}oh-my-zsh is already installed\n${reset}"
   else
-      git clone --depth=1 git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
+      git clone --quiet --depth=1 git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh > /dev/null
   fi
 
 
@@ -244,25 +244,25 @@ if [ "$ZSH" = true ]; then
   if [ -d ~/.oh-my-zsh/plugins/zsh-autosuggestions ]; then
       cd ~/.oh-my-zsh/plugins/zsh-autosuggestions && git pull
   else
-      git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/plugins/zsh-autosuggestions
+      git clone --quiet --depth=1 https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/plugins/zsh-autosuggestions > /dev/null
   fi
 
   if [ -d ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting ]; then
       cd ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting && git pull
   else
-      git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+      git clone --quiet --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting > /dev/null
   fi
 
   if [ -d ~/.oh-my-zsh/custom/plugins/zsh-completions ]; then
       cd ~/.oh-my-zsh/custom/plugins/zsh-completions && git pull
   else
-      git clone --depth=1 https://github.com/zsh-users/zsh-completions ~/.oh-my-zsh/custom/plugins/zsh-completions
+      git clone --quiet --depth=1 https://github.com/zsh-users/zsh-completions ~/.oh-my-zsh/custom/plugins/zsh-completions > /dev/null
   fi
 
   if [ -d ~/.oh-my-zsh/custom/plugins/zsh-history-substring-search ]; then
       cd ~/.oh-my-zsh/custom/plugins/zsh-history-substring-search && git pull
   else
-      git clone --depth=1 https://github.com/zsh-users/zsh-history-substring-search ~/.oh-my-zsh/custom/plugins/zsh-history-substring-search
+      git clone --quiet --depth=1 https://github.com/zsh-users/zsh-history-substring-search ~/.oh-my-zsh/custom/plugins/zsh-history-substring-search > /dev/null
   fi
 
 
@@ -270,9 +270,9 @@ if [ "$ZSH" = true ]; then
 
   echo -e "${green}Install Nerd Fonts version of Hack, Roboto Mono, DejaVu Sans Mono\n${reset}"
 
-  wget -q --show-progress -N https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/Hack/Regular/complete/Hack%20Regular%20Nerd%20Font%20Complete.ttf -P ~/.fonts/
-  wget -q --show-progress -N https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/RobotoMono/Regular/complete/Roboto%20Mono%20Nerd%20Font%20Complete.ttf -P ~/.fonts/
-  wget -q --show-progress -N https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/DejaVuSansMono/Regular/complete/DejaVu%20Sans%20Mono%20Nerd%20Font%20Complete.ttf -P ~/.fonts/
+  wget -q https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/Hack/Regular/complete/Hack%20Regular%20Nerd%20Font%20Complete.ttf -P ~/.fonts/
+  wget -q https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/RobotoMono/Regular/complete/Roboto%20Mono%20Nerd%20Font%20Complete.ttf -P ~/.fonts/
+  wget -q https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/DejaVuSansMono/Regular/complete/DejaVu%20Sans%20Mono%20Nerd%20Font%20Complete.ttf -P ~/.fonts/
 
   fc-cache -fv ~/.fonts
   echo -e "${green}Install Powerlevel10k\n${reset}"
@@ -280,26 +280,26 @@ if [ "$ZSH" = true ]; then
   if [ -d ~/.oh-my-zsh/custom/themes/powerlevel10k ]; then
       cd ~/.oh-my-zsh/custom/themes/powerlevel10k && git pull
   else
-      git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.oh-my-zsh/custom/themes/powerlevel10k
+      git clone --quiet --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.oh-my-zsh/custom/themes/powerlevel10k
   fi
 
   if [ -d ~/.zsh_plugins/marker ]; then
       cd ~/.zsh_plugins/marker && git pull
   else
-      git clone --depth 1 https://github.com/pindexis/marker ~/.zsh_plugins/marker
+      git clone --quiet --depth 1 https://github.com/pindexis/marker ~/.zsh_plugins/marker > /dev/null
   fi
 
-  if ~/.zsh_plugins/marker/install.py; then
+  if ~/.zsh_plugins/marker/install.py > /dev/null; then
       echo -e "${green}Installed Marker\n${reset}"
   else
       echo -e "${yellow}Marker Installation Had Issues\n${reset}"
   fi
 
-  echo -e "${yellow}\nSudo access is needed to change default shell\n${reset}"
+  echo -e "\n${yellow}Sudo access is needed to change default shell\n${reset}"
 
   if [ $os_type = "centos" ]; then
     echo -e "${green}Install chsh\n${reset}"
-    sudo dnf -y install util-linux-user
+    sudo dnf -y -q install util-linux-user
   fi
   
   cd "$INSTALL_DIR" || exit 127
