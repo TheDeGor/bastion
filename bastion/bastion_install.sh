@@ -32,15 +32,15 @@ eval "$os_release"
 
 case $ID in
   ubuntu)
-    echo "$green}Ubuntu detected${reset}"
+    echo "${green}Ubuntu detected${reset}"
     os_type="ubuntu"
   ;;
   debian)
-    echo "$green}Debian detected${reset}"
+    echo "${green}Debian detected${reset}"
     os_type="debian"
   ;;
   centos)
-    echo "$green}CentOS detected${reset}"
+    echo "${green}CentOS detected${reset}"
     os_type="centos"
   ;;
   *)
@@ -61,6 +61,7 @@ case $os_type in
   centos)
     sudo yum install epel-release -y -q > /dev/null
     sudo yum update -y -q > /dev/null
+    sudo yum install -y -q yum-utils  > /dev/null
   ;;
 esac
 
@@ -72,10 +73,52 @@ echo "${green}Install curl, git, wget, pip and other useful staff${reset}"
 
 case $os_type in
   debian)
-    DEBIAN_FRONTEND=noninteractive sudo apt install -y curl git python python-pip python3 python3-pip gnupg software-properties-common apt-transport-https wget -qq 2> /dev/null
+    DEBIAN_FRONTEND=noninteractive sudo apt install -y \
+      curl \
+      git \
+      python \
+      python-pip \
+      python3 \
+      python3-pip \
+      gnupg \
+      software-properties-common \
+      apt-transport-https \
+      wget \
+      apt-transport-https \
+      ca-certificates \
+      gnupg \
+      lsb-release \
+      -qq 2> /dev/null
+      curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+      echo \
+        "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian \
+        $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+      sudo apt-get update -qq 2> /dev/null
+      sudo apt-get install -y -qq docker-ce docker-ce-cli containerd.io > /dev/null
   ;;
   ubuntu)
-    DEBIAN_FRONTEND=noninteractive sudo apt install -y curl git python python3 python3-pip gnupg software-properties-common apt-transport-https wget -qq 2> /dev/null
+    DEBIAN_FRONTEND=noninteractive sudo apt install -y \
+      curl \
+      git \
+      python \
+      python3 \
+      python3-pip \
+      gnupg \
+      software-properties-common \
+      apt-transport-https \
+      wget \
+      apt-transport-https \
+      ca-certificates \
+      gnupg \
+      lsb-release \
+      -qq 2> /dev/null
+      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+      echo \
+        "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+        $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+      sudo apt-get update -qq 2> /dev/null
+      sudo apt-get install -y -qq docker-ce docker-ce-cli containerd.io > /dev/null
+
   ;;
   centos)
     sudo yum install -q -y curl git wget > /dev/null
@@ -85,6 +128,11 @@ case $os_type in
     sudo yum install -q -y python2-devel > /dev/null
     sudo yum groupinstall -q -y 'development tools' > /dev/null
     sudo ln -s /usr/bin/python2 /usr/bin/python > /dev/null
+    sudo yum-config-manager \
+      --add-repo \
+      https://download.docker.com/linux/centos/docker-ce.repo
+    sudo yum install -q -y{ docker-ce docker-ce-cli containerd.io
+
   ;;
 esac
 
@@ -100,7 +148,7 @@ if [ "$TERRAFORM" = true ]; then
       terraform -install-autocomplete > /dev/null
     ;;
     centos)
-      sudo yum install -y -q yum-utils  > /dev/null
+
       sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo  > /dev/null
       sudo yum -y -q install "terraform-${TERRAFORM_VER}-1.x86_64" > /dev/null
     ;;
