@@ -32,15 +32,15 @@ eval "$os_release"
 
 case $ID in
   ubuntu)
-    echo "${green}Ubuntu detected${reset}"
+    echo "$green}Ubuntu detected${reset}"
     os_type="ubuntu"
   ;;
   debian)
-    echo "${green}Debian detected${reset}"
+    echo "$green}Debian detected${reset}"
     os_type="debian"
   ;;
   centos)
-    echo "${green}CentOS detected${reset}"
+    echo "$green}CentOS detected${reset}"
     os_type="centos"
   ;;
   *)
@@ -131,7 +131,7 @@ case $os_type in
     sudo yum-config-manager \
       --add-repo \
       https://download.docker.com/linux/centos/docker-ce.repo
-    sudo yum install -q -y{ docker-ce docker-ce-cli containerd.io
+    sudo yum install -q -y docker-ce docker-ce-cli containerd.io
 
   ;;
 esac
