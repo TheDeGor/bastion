@@ -16,9 +16,9 @@ variable boot_disk_images {
   default = ["ubuntu-os-cloud/ubuntu-2010"]
   validation {
     condition     = alltrue([
-      for entry in var.boot_disk_images : contains(["ubuntu-os-cloud/ubuntu-2010", "debian-cloud/debian-10", "centos-cloud/centos-stream-8"], entry)
+      for entry in var.boot_disk_images : contains(["ubuntu-os-cloud/ubuntu-2004-lts"], entry)
     ]) && (length (var.boot_disk_images) != 0)
-    error_message = "Three types of images supported: ubuntu-os-cloud/ubuntu-2010, debian-cloud/debian-10, centos-cloud/centos-stream-8."
+    error_message = "Three types of images supported: ubuntu-os-cloud/ubuntu-2004-lts."
   }
 }
 variable public_key_path {

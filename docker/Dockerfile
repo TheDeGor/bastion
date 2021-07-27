@@ -38,44 +38,36 @@ RUN sudo apt update && sudo apt upgrade -y && \
       dnsutils \
       lsb-release \
       vim \
+      iputils-ping \
       fontconfig && \
-    echo "Docker" && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg && \
     echo \
       "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
       $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list && \
     sudo apt-get update && \
     sudo apt-get install --no-install-recommends -y docker-ce docker-ce-cli containerd.io && \
-    echo "Terraform" && \
     curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
     sudo apt-add-repository -y "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main" && \
     sudo apt-get update && sudo apt-get install --no-install-recommends -y terraform="$TERRAFORM_VER" && \
     terraform -install-autocomplete && \
-    echo "Ansible" && \
     sudo apt install --no-install-recommends -y ansible && \
-    echo "Kubectl" && \
     curl -sS https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add - && \
     echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list && \
     sudo apt-get update && \
     sudo apt-get install --no-install-recommends -y kubectl && \
-    echo "jq" && \
     sudo apt install --no-install-recommends -y jq && \
     curl -sS https://baltocdn.com/helm/signing.asc | sudo apt-key add - && \
     echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list && \
     sudo apt-get update && \
-    echo "Helm" && \
     sudo apt-get install --no-install-recommends -y helm && \
-    echo "Sops" && \
     sops_deb_name="sops_${SOPS_VER}_amd64.deb" && \
     sudo wget "https://github.com/mozilla/sops/releases/download/v${SOPS_VER}/${sops_deb_name}" && \
     sudo apt install --no-install-recommends -y "./${sops_deb_name}" && \
     sudo rm "${sops_deb_name}" && \
-    echo "K9S" && \
     sudo wget https://github.com/derailed/k9s/releases/download/v0.24.14/k9s_Linux_x86_64.tar.gz && \
     sudo tar zxf k9s_Linux_x86_64.tar.gz && \
     sudo mv k9s /usr/local/bin && \
     sudo rm README.md LICENSE k9s_Linux_x86_64.tar.gz && \
-    echo "Zsh" && \
     sudo apt install --no-install-recommends -y zsh && \
     git clone --depth=1 git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh && \
     mkdir -p ~/.zsh_plugins && \
@@ -91,15 +83,12 @@ RUN sudo apt update && sudo apt upgrade -y && \
     sudo chsh -s "$(which zsh)" "$(whoami)" && \
     sudo apt-get autoremove -y && \
     sudo apt-get clean -y 
-RUN ls -la ~
 COPY . /home/$USERNAME
-RUN ls -la ~
 
-LABEL Name = "bastion-host" \
-      Version = "0.0.1" \
-      Architecture = "amd64"
+LABEL Name = "bastion-host"
+LABEL Version = "0.0.1"
+LABEL Architecture = "amd64"
 
-HEALTHCHECK --interval=5s --timeout=10s --retries=3 CMD curl -sS 127.0.0.1 || exit 1
-
+# VOLUME /var/run/docker.sock /var/run/docker.sock
 ENTRYPOINT [ "/bin/zsh" ]
 CMD ["-l"]

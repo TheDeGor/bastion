@@ -2,9 +2,29 @@ locals {
   num_of_nodes = length (var.boot_disk_images)
 }
 
+resource "random_id" "tag" {
+  byte_length = 8
+}
+
 resource "google_service_account" "bastion" {
   account_id   = "bastion-service-account"
   display_name = "Service Account"
+}
+
+resource "null_resource" "build_image" {
+  provisioner "local-exec" {
+    command = "docker build  -t thedegor/bastion:${random_id.tag.hex} docker/."
+  }
+  # triggers = {
+  #   cluster_instance_ids = join(",", google_compute_instance.bastion.id)
+  # }
+}
+
+resource "null_resource" "push_image" {
+  provisioner "local-exec" {
+    command = "docker push thedegor/bastion:${random_id.tag.hex}"
+  }
+  depends_on = [null_resource.build_image]
 }
 
 resource "google_compute_instance" "bastion" {
@@ -42,37 +62,24 @@ resource "google_compute_instance" "bastion" {
     scopes = ["cloud-platform"]
   }
 
-  provisioner "file" {
+  provisioner "remote-exec" {
     connection {
             type = "ssh"
             host = self.network_interface.0.access_config.0.nat_ip
             user = var.remote_user
             private_key = file(var.private_key_path)
-    }
-    source      = "bastion/bastion_install.sh"
-    destination = "${var.remote_dir}/bastion_install.sh"
-  }
-  
-  provisioner "file" {
-    connection {
-            type = "ssh"
-            host = self.network_interface.0.access_config.0.nat_ip
-            user = var.remote_user
-            private_key = file(var.private_key_path)
-    }
-    source      = "bastion/.zshrc"
-    destination = "${var.remote_dir}/.zshrc"
-  }
+    } 
 
-  provisioner "file" {
-    connection {
-            type = "ssh"
-            host = self.network_interface.0.access_config.0.nat_ip
-            user = var.remote_user
-            private_key = file(var.private_key_path)
-    }
-    source      = "bastion/.p10k.zsh"
-    destination = "${var.remote_dir}/.p10k.zsh"
+    inline = [
+      "sudo apt-get update",
+      "sudo apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release",
+      "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg",
+      "echo \"deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null",
+      "sudo apt-get update",
+      "sudo apt-get install -y docker-ce docker-ce-cli containerd.io",
+      "sudo groupadd docker",
+      "sudo usermod -aG docker $USER",
+    ]
   }
 
   provisioner "remote-exec" {
@@ -84,21 +91,11 @@ resource "google_compute_instance" "bastion" {
     } 
 
     inline = [
-      "export ZSH=${var.zsh}",
-      "export TERRAFORM=${var.terraform}",
-      "export TERRAFORM_VER=${var.terraform_version}",
-      "export ANSIBLE=${var.ansible}",
-      "export KUBECTL=${var.kubectl}",
-      "export JQ=${var.jq}",
-      "export HELM=${var.helm}",
-      "export SOPS=${var.sops}",
-      "export SOPS_VER=${var.sops_version}",
-      "export K9S=${var.k9s}",
-      "export INSTALL_DIR=${var.remote_dir}",
-      "chmod +x ${var.remote_dir}/bastion_install.sh",
-      "${var.remote_dir}/bastion_install.sh",
+      "docker pull thedegor/bastion:${random_id.tag.hex}"
     ]
   }
+
+  depends_on = [null_resource.push_image]
 }
 
 output "instance_external_ip" {
