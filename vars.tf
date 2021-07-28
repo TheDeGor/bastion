@@ -13,12 +13,12 @@ variable machine_type {
 }
 variable boot_disk_images {
   type = list(string)
-  default = ["ubuntu-os-cloud/ubuntu-2010"]
+  default = ["ubuntu-os-cloud/ubuntu-2004-lts"]
   validation {
     condition     = alltrue([
-      for entry in var.boot_disk_images : contains(["ubuntu-os-cloud/ubuntu-2010", "debian-cloud/debian-10", "centos-cloud/centos-stream-8"], entry)
+      for entry in var.boot_disk_images : contains(["ubuntu-os-cloud/ubuntu-2004-lts", "debian-cloud/debian-10", "centos-cloud/centos-stream-8"], entry)
     ]) && (length (var.boot_disk_images) != 0)
-    error_message = "Three types of images supported: ubuntu-os-cloud/ubuntu-2010, debian-cloud/debian-10, centos-cloud/centos-stream-8."
+    error_message = "Three types of images supported: ubuntu-os-cloud/ubuntu-2004-lts, debian-cloud/debian-10, centos-cloud/centos-stream-8."
   }
 }
 variable public_key_path {
@@ -73,4 +73,20 @@ variable sops_version {
 variable k9s {
   type = bool
   default = true
+}
+
+variable "network_selflink" {
+  type = string
+  validation {
+    condition = var.network_selflink != ""
+    error_message = "Network for bastion-host must be specified."
+  }
+}
+
+variable "subnet_selflink" {
+  type = string
+  validation {
+    condition = var.subnet_selflink != ""
+    error_message = "Subnet for bastion-host must be specified."
+  }
 }
