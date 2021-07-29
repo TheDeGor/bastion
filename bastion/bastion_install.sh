@@ -87,6 +87,7 @@ case $os_type in
       apt-transport-https \
       ca-certificates \
       gnupg \
+      fontconfig \
       lsb-release \
       -qq 2> /dev/null
       curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
@@ -131,7 +132,7 @@ case $os_type in
     sudo yum-config-manager \
       --add-repo \
       https://download.docker.com/linux/centos/docker-ce.repo
-    sudo yum install -q -y{ docker-ce docker-ce-cli containerd.io
+    sudo yum install -q -y docker-ce docker-ce-cli containerd.io
 
   ;;
 esac

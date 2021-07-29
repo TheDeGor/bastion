@@ -2,6 +2,12 @@ locals {
   num_of_nodes = length (var.boot_disk_images)
 }
 
+resource "google_compute_project_metadata" "ssh_keys" {
+    metadata {
+      ssh-keys = "${var.remote_user}:${file(var.public_key_path)}"
+    }
+}
+
 resource "google_service_account" "bastion" {
   account_id   = "bastion-service-account"
   display_name = "Service Account"
@@ -13,7 +19,7 @@ resource "google_compute_instance" "bastion" {
   machine_type = var.machine_type
   zone         = var.zone
 
-  tags = ["boot-image"]
+  tags = ["bastion"]
 
   boot_disk {
     initialize_params {
@@ -23,7 +29,8 @@ resource "google_compute_instance" "bastion" {
   }
 
   network_interface {
-    network = "default"
+    network = var.network_selflink
+    subnetwork = var.subnet_selflink
 
     access_config {
       // Ephemeral IP
@@ -31,10 +38,8 @@ resource "google_compute_instance" "bastion" {
   }
 
   metadata = {
-    ssh-keys = "${var.remote_user}:${file(var.public_key_path)}"
+    block-project-ssh-keys = false 
   }
-
-  metadata_startup_script = "echo hi > /test.txt"
 
   service_account {
     # Google recommends custom service accounts that have cloud-platform scope and permissions granted via IAM Roles.
@@ -110,3 +115,5 @@ output "instance_external_ip" {
 #   filename = "${path.module}/ip"
 #   file_permission = 0644
 # }
+
+# firewall rule and iap
