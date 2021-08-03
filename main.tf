@@ -110,6 +110,7 @@ output "instance_external_ip" {
   value = join("", formatlist("%s\n", google_compute_instance.bastion[*].network_interface[0].access_config[0].nat_ip))
 }
 
+
 # resource "local_file" "vars" {
 #   content = google_compute_instance.bastion.network_interface[0].access_config[0].nat_ip
 #   filename = "${path.module}/ip"
