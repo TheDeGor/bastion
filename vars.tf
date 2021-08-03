@@ -1,10 +1,13 @@
 variable project_id {
+  description = "Project ID where the bastion will run"
   type = string
 }
 variable zone {
+  description = "Zone where they bastion will run"
   type = string
 }
 variable region {
+  description = "Region where the bastion will run"
   type = string
 }
 variable machine_type {
@@ -75,18 +78,23 @@ variable k9s {
   default = true
 }
 
-variable "network_selflink" {
-  type = string
-  validation {
-    condition = var.network_selflink != ""
-    error_message = "Network for bastion-host must be specified."
-  }
-}
-
 variable "subnet_selflink" {
   type = string
   validation {
     condition = var.subnet_selflink != ""
     error_message = "Subnet for bastion-host must be specified."
   }
+}
+
+variable "instances_service_account_email" { 
+  type = string
+}
+
+variable "target_size" {
+  description = "Number of instances to create"
+  default     = 1
+}
+
+variable "remote_user_name" {
+  type = string
 }

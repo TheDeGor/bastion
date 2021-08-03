@@ -1,33 +1,47 @@
-## Bastion server for personal usage
-### Prerequsites
-1. Google cloud SDK
-2. gcloud utility is set to proper account and authorized
-3. Terraform 1.0.2
+# Simple Example
 
-### Configuration
-To change config use `terraform.tfvars.json` from root directory of project  
-Settings are:
-1. `project_id` - name of GCP project 
-2. `zone` - GCP zone
-3. `region` - GCP region
-4. `machine_type` - [GSC image type](https://cloud.google.com/compute/docs/machine-types)
-5. `boot_disk_images` - OS type of your VM instance. Now one or several of the following allowed: `"ubuntu-os-cloud/ubuntu-2010", "debian-cloud/debian-10", "centos-cloud/centos-stream-8"`. Number of instances calculates from length of this list. For example if `boot_disk_images = ["ubuntu-os-cloud/ubuntu-2010", "debian-cloud/debian-10", "centos-cloud/centos-stream-8"]` then 3 VMs with specified OS will be created
-6. `public_key_path` - path to your public ssh key
-7. `private_key_path` - path to your private ssh key (is needed for postprovision VMs)
-8. `remote_user` - remote user name you want to use
-9. `remote_dir` - directory, where postprovision script will be placed remotely
-10. `zsh` - install [ZSH](https://ru.wikipedia.org/wiki/Zsh) and use instead of Bash
-11. `terraform` - install [Terraform](https://www.terraform.io/)
-12. `terraform_version` - Terraform version to install (for example `"1.0.2"`), use it with `terraform = true` setting
-13. `ansible` - install [Ansible](https://www.ansible.com/)
-14. `kubectl` - install [Kubectl](https://kubernetes.io/ru/docs/reference/kubectl/overview/)
-15. `jq` - install [jq](https://stedolan.github.io/jq/)
-16. `helm` - install [Helm](https://helm.sh/)
-17. `sops` - install [SOPS](https://github.com/mozilla/sops)
-18. `sops_version` SOPS version to install (for example `"3.7.1"`), use it with `sops = true` setting
-19. `k9s` - install [K9S](https://github.com/derailed/k9s)
+This example will not set up the target hosts like the [Two Service Example](../two_service_example) but it will set up a basic network, subnet and bastion host for you to log into using IAP and OS Login. You'll notice that we create a firewall rule that allows the bastion to talk to the rest of the network on port 22 using the output of the bastion service account email for simplicity. This can and should be scoped down to allow access to specific hosts.
 
-#### Have a pleasant use!)
+## Deploy
 
-### Links
-I used [quickzsh](https://github.com/jotyGill/quickz-sh) in my scripts
+Create a `terraform.tfvars` file with required variables similar to:
+
+```
+members = ["user:me@example.com"]
+project = "my-project"
+```
+
+Run the apply
+
+```
+terraform apply -var-file terraform.tfvars
+```
+
+## Usage
+
+```
+gcloud auth login
+gcloud compute ssh bastion-vm
+```
+
+You should now be logged in as a user that looks like `ext_me_example_com` with the prefix of `ext` indicating you have logged in with OS Login. You should also notice the following line in standard out that indicates you are tunnelling through IAP instead of the public internet:
+
+```
+External IP address was not found; defaulting to using IAP tunneling.
+```
+
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| members | List of members in the standard GCP form: user:{email}, serviceAccount:{email}, group:{email} | `list` | `[]` | no |
+| project | Project ID where the bastion will run | `string` | n/a | yes |
+| region | Region where the bastion will run | `string` | `"us-west1"` | no |
+| zone | Zone where they bastion will run | `string` | `"us-west1-a"` | no |
+
+## Outputs
+
+No output.
+
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

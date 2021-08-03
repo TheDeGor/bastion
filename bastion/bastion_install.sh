@@ -131,7 +131,7 @@ case $os_type in
     sudo yum-config-manager \
       --add-repo \
       https://download.docker.com/linux/centos/docker-ce.repo
-    sudo yum install -q -y{ docker-ce docker-ce-cli containerd.io
+    sudo yum install -q -y docker-ce docker-ce-cli containerd.io
 
   ;;
 esac
